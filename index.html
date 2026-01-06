@@ -1619,6 +1619,7 @@ function renderDash(){
             ${renderLangSelector()}
             <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle Theme">${theme==='dark'?'☀️':'🌙'}</button>
             <button class="icon-btn ${inj.length?'danger':''}" onclick="togglePanel('injury')" aria-label="${t('injuries')}" style="position:relative">🏥${inj.length?`<span class="badge">${inj.length}</span>`:''}</button>
+            <button class="icon-btn" onclick="window.open('teste-scoring.html', '_blank')" aria-label="Análise Estratégica" title="Análise Estratégica Pro" style="background:linear-gradient(135deg,#a185f7,#5c9eff);color:white;font-weight:600">🧠</button>
             <div class="user-info">${user.avatar?`<img src="https://sleepercdn.com/avatars/thumbs/${user.avatar}" class="user-avatar" loading="lazy">`:''}${escapeHtml(user.display_name||user.username)}</div>
             <button class="icon-btn" onclick="logout()" aria-label="${t('logout')}">🚪</button>
         </div>
