@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Análise Estratégica - Dynasty Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #1a1d21;
+            --bg-secondary: #23272e;
+            --bg-card: #2a2f38;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --accent: #5c9eff;
+            --success: #34a853;
+            --warning: #f9ab00;
+            --error: #ea4335;
+            --dynasty: #a185f7;
+            --border: #3c4149;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--success);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .status.error {
+            background: var(--error);
+        }
+        
+        .status.warning {
+            background: var(--warning);
+        }
+        
+        .league-analysis {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .league-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .league-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .league-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-dynasty {
+            background: rgba(161, 133, 247, 0.2);
+            color: var(--dynasty);
+        }
+        
+        .badge-redraft {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        
+        .insights-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .insight-card {
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        .insight-card.critical {
+            background: rgba(234, 67, 53, 0.15);
+            border-color: var(--error);
+        }
+        
+        .insight-card.high {
+            background: rgba(249, 171, 0, 0.15);
+            border-color: var(--warning);
+        }
+        
+        .insight-card.medium {
+            background: rgba(92, 158, 255, 0.15);
+            border-color: var(--accent);
+        }
+        
+        .insight-card.low {
+            background: rgba(52, 168, 83, 0.15);
+            border-color: var(--success);
+        }
+        
+        .insight-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .insight-content {
+            flex: 1;
+        }
+        
+        .insight-category {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            color: var(--accent);
+        }
+        
+        .insight-message {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .scoring-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .score-chip {
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .score-chip strong {
+            color: var(--text-primary);
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 2px dashed var(--border);
+        }
+        
+        .no-data-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .no-data-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .no-data-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #4a8af0;
+            transform: translateY(-1px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Análise Estratégica Pro</h1>
+            <p class="subtitle">Auditoria de Configuração de Pontuação vs. Roster</p>
+            <span class="status" id="status">Carregando...</span>
+        </header>
+        
+        <div id="app"></div>
+    </div>
+
+    <script>
+        // Configuração (mesmo do index.html)
+        const CONFIG = {
+            CACHE_KEY: 'dynasty_cache'
+        };
+
+        // Motor de Análise Estratégica
+        class ScoringAnalyzer {
+            constructor(league, players) {
+                this.league = league;
+                this.players = players;
+                this.scoring = league.settings?.scoring_settings || league.scoring_settings || {};
+                this.positions = league.roster_positions || [];
+                this.totalTeams = league.total_rosters || 12;
+            }
+
+            // Detecta peso do Superflex
+            detectSuperflexWeight() {
+                const hasSF = this.positions.includes('SUPER_FLEX');
+                return {
+                    hasSF,
+                    multiplier: hasSF ? 2.5 : 1.0,
+                    label: hasSF ? 'SUPERFLEX ATIVO' : 'Standard'
+                };
+            }
+
+            // Detecta TE Premium
+            detectTEPremium() {
+                const tep = this.scoring.bonus_rec_te || 0;
+                
+                if (tep >= 1.0) return { level: 'EXTREME_TEP', multiplier: 1.75, points: tep };
+                if (tep >= 0.75) return { level: 'HIGH_TEP', multiplier: 1.5, points: tep };
+                if (tep >= 0.5) return { level: 'TEP', multiplier: 1.25, points: tep };
+                if (tep > 0) return { level: 'LIGHT_TEP', multiplier: 1.1, points: tep };
+                
+                return { level: 'STANDARD', multiplier: 1.0, points: 0 };
+            }
+
+            // Detecta configuração de QB
+            detectQBScoring() {
+                const passTD = this.scoring.pass_td || 4;
+                const sf = this.detectSuperflexWeight();
+                
+                if (passTD === 6 && sf.hasSF) return { level: 'CRITICAL_QB_PREMIUM', passTD };
+                if (passTD === 6) return { level: 'HIGH_QB_VALUE', passTD };
+                if (sf.hasSF) return { level: 'SUPERFLEX_QB_ADVANTAGE', passTD };
+                
+                return { level: 'STANDARD_QB', passTD };
+            }
+
+            // Detecta PPR
+            detectPPRScoring() {
+                const ppr = this.scoring.rec || 0;
+                
+                if (ppr === 1) return { level: 'FULL_PPR', points: 1 };
+                if (ppr === 0.5) return { level: 'HALF_PPR', points: 0.5 };
+                
+                return { level: 'STANDARD', points: 0 };
+            }
+
+            // Calcula escassez por posição
+            calculatePositionalScarcity() {
+                const starterCounts = {};
+                
+                this.positions.forEach(pos => {
+                    const normalized = this.normalizePosition(pos);
+                    if (normalized && normalized !== 'BN') {
+                        starterCounts[normalized] = (starterCounts[normalized] || 0) + 1;
+                    }
+                });
+
+                return Object.entries(starterCounts).map(([pos, count]) => {
+                    const totalStarters = count * this.totalTeams;
+                    const scarcity = this.calculateScarcity(pos, totalStarters);
+                    
+                    return {
+                        position: pos,
+                        startersPerTeam: count,
+                        totalStarters,
+                        scarcityLevel: scarcity.level,
+                        scarcityScore: scarcity.score
+                    };
+                });
+            }
+
+            calculateScarcity(position, totalStarters) {
+                // Pool de jogadores relevantes na NFL
+                const benchDepth = {
+                    QB: 50,
+                    RB: 70,
+                    WR: 100,
+                    TE: 35,
+                    FLEX: 200,
+                    K: 32,
+                    DEF: 32
+                };
+                
+                const available = benchDepth[position] || 50;
+                const ratio = available / totalStarters;
+                
+                if (ratio < 1.3) return { level: 'EXTREME_SCARCITY', score: 5 };
+                if (ratio < 1.8) return { level: 'HIGH_SCARCITY', score: 4 };
+                if (ratio < 2.5) return { level: 'MODERATE_SCARCITY', score: 3 };
+                if (ratio < 3.5) return { level: 'LOW_SCARCITY', score: 2 };
+                
+                return { level: 'ABUNDANT', score: 1 };
+            }
+
+            normalizePosition(pos) {
+                if (['FLEX', 'REC_FLEX', 'WRRB_FLEX'].includes(pos)) return 'FLEX';
+                if (['SUPER_FLEX'].includes(pos)) return 'SF';
+                if (['DL', 'DE', 'DT'].includes(pos)) return 'DL';
+                if (['LB', 'ILB', 'OLB'].includes(pos)) return 'LB';
+                if (['DB', 'CB', 'S', 'FS', 'SS'].includes(pos)) return 'DB';
+                if (['BN', 'IR'].includes(pos)) return null;
+                
+                return pos;
+            }
+
+            // Gera insights estratégicos
+            getStrategicVerdict() {
+                const insights = [];
+
+                // Análise QB
+                const qbStatus = this.detectQBScoring();
+                const sfStatus = this.detectSuperflexWeight();
+                
+                if (qbStatus.level === 'CRITICAL_QB_PREMIUM') {
+                    insights.push({
+                        severity: 'critical',
+                        icon: '🚨',
+                        category: 'QUARTERBACK',
+                        message: `Liga com ${qbStatus.passTD}pt Pass TD + Superflex: QBs valem OURO. Você PRECISA ter 3+ QBs titulares no elenco. Um QB2 decente vale mais que um WR1 nesta configuração.`
+                    });
+                } else if (qbStatus.level === 'HIGH_QB_VALUE') {
+                    insights.push({
+                        severity: 'high',
+                        icon: '⚠️',
+                        category: 'QUARTERBACK',
+                        message: `${qbStatus.passTD}pt Pass TD favorece QBs que lançam muito. Priorize volume de passes sobre rushing upside. Patrick Mahomes > Jalen Hurts nesta liga.`
+                    });
+                } else if (qbStatus.level === 'SUPERFLEX_QB_ADVANTAGE') {
+                    insights.push({
+                        severity: 'high',
+                        icon: '📊',
+                        category: 'SUPERFLEX',
+                        message: 'Superflex ativo: Ter 3 QBs startáveis é MANDATÓRIO. Nunca deixe o slot SF vazio ou preenchido com non-QB. A vantagem de pontuação é enorme.'
+                    });
+                }
+
+                // Análise TE
+                const teStatus = this.detectTEPremium();
+                
+                if (teStatus.level === 'EXTREME_TEP') {
+                    insights.push({
+                        severity: 'critical',
+                        icon: '🔥',
+                        category: 'TIGHT END',
+                        message: `TEP de ${teStatus.points}pts é EXTREMO! TEs Elite (Kelce, Andrews, Kittle tier) valem como WR1s top-5. Esta é uma das configurações mais valiosas para TEs. Acumule profundidade nesta posição.`
+                    });
+                } else if (teStatus.level === 'HIGH_TEP') {
+                    insights.push({
+                        severity: 'high',
+                        icon: '⚡',
+                        category: 'TIGHT END',
+                        message: `TEP ${teStatus.points}pts: TEs Elite valem muito mais que em ligas standard. Priorize TEs de volume (targets) sobre touchdown-dependent. Um TE Top-5 é um ativo diferenciador.`
+                    });
+                } else if (teStatus.level === 'TEP') {
+                    insights.push({
+                        severity: 'medium',
+                        icon: '📈',
+                        category: 'TIGHT END',
+                        message: `TEP ${teStatus.points}pts: Bônus moderado para TEs. TEs que recebem 60+ targets/ano ganham valor extra. Não é crítico, mas ter um TE sólido ajuda.`
+                    });
+                }
+
+                // Análise PPR
+                const pprStatus = this.detectPPRScoring();
+                
+                if (pprStatus.level === 'FULL_PPR') {
+                    insights.push({
+                        severity: 'medium',
+                        icon: '🎯',
+                        category: 'RECEPÇÕES',
+                        message: 'Full PPR: WRs de volume (8+ targets/jogo) > RBs touchdown-dependent. Priorize recepções sobre TDs. Um WR com 100 catches vale mais que um RB com 12 TDs.'
+                    });
+                } else if (pprStatus.level === 'HALF_PPR') {
+                    insights.push({
+                        severity: 'low',
+                        icon: '⚖️',
+                        category: 'RECEPÇÕES',
+                        message: 'Half PPR: Configuração balanceada. RBs e WRs têm valor similar. Foque em produção total (yards + TDs + catches) sem viés de posição.'
+                    });
+                }
+
+                // Análise de Escassez
+                const scarcity = this.calculatePositionalScarcity();
+                
+                scarcity.forEach(s => {
+                    if (s.scarcityLevel === 'EXTREME_SCARCITY') {
+                        insights.push({
+                            severity: 'high',
+                            icon: '🔥',
+                            category: s.position,
+                            message: `${s.position}: ${s.startersPerTeam} titulares/time → Total de ${s.totalStarters} starters na liga. ESCASSEZ EXTREMA! Acumule profundidade. Jogadores medianos nesta posição têm valor de troca inflacionado.`
+                        });
+                    } else if (s.scarcityLevel === 'HIGH_SCARCITY') {
+                        insights.push({
+                            severity: 'medium',
+                            icon: '⚠️',
+                            category: s.position,
+                            message: `${s.position}: ${s.startersPerTeam} titulares/time (${s.totalStarters} total). Escassez ALTA. Waiver wire será competitivo nesta posição. Mantenha 1-2 backups.`
+                        });
+                    }
+                });
+
+                // Insight de Dynasty vs Redraft
+                const leagueType = this.getLeagueType();
+                if (leagueType === 'dynasty') {
+                    insights.push({
+                        severity: 'low',
+                        icon: '🏆',
+                        category: 'DYNASTY',
+                        message: 'Liga Dynasty: Pense em 2-3 anos à frente. Draft picks de 1ª rodada valem como jogadores Top-15. Não troque seu futuro por win-now se você não for contender.'
+                    });
+                }
+
+                return insights;
+            }
+
+            getLeagueType() {
+                const type = this.league.settings?.type || this.league.type || 0;
+                if (type === 2) return 'dynasty';
+                if (type === 1) return 'keeper';
+                return 'redraft';
+            }
+
+            // Gera resumo de pontuação
+            getScoringMeta() {
+                const qb = this.detectQBScoring();
+                const te = this.detectTEPremium();
+                const ppr = this.detectPPRScoring();
+                const sf = this.detectSuperflexWeight();
+
+                return {
+                    passTD: qb.passTD,
+                    rec: ppr.points,
+                    bonusRecTE: te.points,
+                    superflex: sf.hasSF,
+                    type: this.getLeagueType()
+                };
+            }
+        }
+
+        // Renderização
+        function renderAnalysis(cache) {
+            const app = document.getElementById('app');
+            const status = document.getElementById('status');
+            
+            const leagues = cache.leagues || [];
+            const players = cache.players || {};
+            const userName = cache.userId || 'Usuário';
+
+            if (!leagues.length) {
+                status.className = 'status error';
+                status.textContent = '❌ Nenhuma liga encontrada';
+                
+                app.innerHTML = `
+                    <div class="no-data">
+                        <div class="no-data-icon">🏈</div>
+                        <div class="no-data-title">Nenhuma liga carregada</div>
+                        <div class="no-data-text">
+                            Você precisa fazer login no Dashboard principal primeiro<br>
+                            para carregar seus dados.
+                        </div>
+                        <a href="index.html" class="btn-primary">Ir para o Dashboard</a>
+                    </div>
+                `;
+                return;
+            }
+
+            status.className = 'status';
+            status.textContent = `✅ ${leagues.length} ligas analisadas`;
+
+            // Stats gerais
+            const totalDynasty = leagues.filter(l => {
+                const analyzer = new ScoringAnalyzer(l, players);
+                return analyzer.getLeagueType() === 'dynasty';
+            }).length;
+
+            const totalSF = leagues.filter(l => {
+                const analyzer = new ScoringAnalyzer(l, players);
+                return analyzer.detectSuperflexWeight().hasSF;
+            }).length;
+
+            const totalTEP = leagues.filter(l => {
+                const analyzer = new ScoringAnalyzer(l, players);
+                return analyzer.detectTEPremium().level !== 'STANDARD';
+            }).length;
+
+            let html = `
+                <div class="stats-overview">
+                    <div class="stat-box">
+                        <div class="stat-value">${leagues.length}</div>
+                        <div class="stat-label">Ligas Totais</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${totalDynasty}</div>
+                        <div class="stat-label">Dynasty</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${totalSF}</div>
+                        <div class="stat-label">Superflex</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${totalTEP}</div>
+                        <div class="stat-label">TE Premium</div>
+                    </div>
+                </div>
+            `;
+
+            // Análise de cada liga
+            leagues.forEach(league => {
+                const analyzer = new ScoringAnalyzer(league, players);
+                const insights = analyzer.getStrategicVerdict();
+                const meta = analyzer.getScoringMeta();
+                const leagueType = analyzer.getLeagueType();
+
+                html += `
+                    <div class="league-analysis">
+                        <div class="league-header">
+                            <div>
+                                <div class="league-title">${escapeHtml(league.name)}</div>
+                                <span class="league-badge badge-${leagueType}">${leagueType.toUpperCase()}</span>
+                            </div>
+                        </div>
+
+                        <div class="insights-grid">
+                            ${insights.map(insight => `
+                                <div class="insight-card ${insight.severity}">
+                                    <div class="insight-icon">${insight.icon}</div>
+                                    <div class="insight-content">
+                                        <div class="insight-category">[${insight.category}]</div>
+                                        <div class="insight-message">${insight.message}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            
+                            ${insights.length === 0 ? `
+                                <div class="insight-card low">
+                                    <div class="insight-icon">✅</div>
+                                    <div class="insight-content">
+                                        <div class="insight-category">[STANDARD]</div>
+                                        <div class="insight-message">Liga com configuração padrão. Sem vantagens ou desvantagens posicionais significativas.</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="scoring-summary">
+                            <div class="score-chip"><strong>Pass TD:</strong> ${meta.passTD}pts</div>
+                            <div class="score-chip"><strong>PPR:</strong> ${meta.rec}pts</div>
+                            ${meta.bonusRecTE > 0 ? `<div class="score-chip"><strong>TE Bonus:</strong> ${meta.bonusRecTE}pts</div>` : ''}
+                            ${meta.superflex ? `<div class="score-chip"><strong>Superflex:</strong> Sim</div>` : ''}
+                            <div class="score-chip"><strong>Times:</strong> ${league.total_rosters || 12}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            app.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Inicialização
+        function init() {
+            try {
+                const cacheData = localStorage.getItem(CONFIG.CACHE_KEY);
+                
+                if (!cacheData) {
+                    document.getElementById('status').className = 'status warning';
+                    document.getElementById('status').textContent = '⚠️ Nenhum dado encontrado';
+                    
+                    document.getElementById('app').innerHTML = `
+                        <div class="no-data">
+                            <div class="no-data-icon">⚠️</div>
+                            <div class="no-data-title">Cache Vazio</div>
+                            <div class="no-data-text">
+                                Nenhum dado foi encontrado no navegador.<br>
+                                Faça login no Dashboard principal para carregar suas ligas.
+                            </div>
+                            <a href="index.html" class="btn-primary">Ir para o Dashboard</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const cache = JSON.parse(cacheData);
+                
+                // Validar estrutura
+                if (!cache.leagues || !Array.isArray(cache.leagues)) {
+                    throw new Error('Cache inválido');
+                }
+
+                renderAnalysis(cache);
+
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = '❌ Erro ao carregar';
+                
+                document.getElementById('app').innerHTML = `
+                    <div class="no-data">
+                        <div class="no-data-icon">❌</div>
+                        <div class="no-data-title">Erro ao Carregar Dados</div>
+                        <div class="no-data-text">
+                            Ocorreu um erro ao ler o cache do navegador.<br>
+                            Tente fazer login novamente no Dashboard.
+                        </div>
+                        <a href="index.html" class="btn-primary">Ir para o Dashboard</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Executar ao carregar
+        init();
+    </script>
+</body>
+</html>
