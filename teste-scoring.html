@@ -683,12 +683,19 @@
         // Inicialização
         function init() {
             try {
+                // DEBUG: Mostrar todas as chaves do localStorage
+                const allKeys = Object.keys(localStorage);
+                console.log('🔍 DEBUG: Chaves no localStorage:', allKeys);
+                console.log('🔍 DEBUG: Procurando chave:', CONFIG.CACHE_KEY);
+                
                 const cacheData = localStorage.getItem(CONFIG.CACHE_KEY);
+                console.log('🔍 DEBUG: Dados encontrados?', cacheData ? 'SIM' : 'NÃO');
                 
                 if (!cacheData) {
                     document.getElementById('status').className = 'status warning';
                     document.getElementById('status').textContent = '⚠️ Nenhum dado encontrado';
                     
+                    // Mostrar debug info no HTML também
                     document.getElementById('app').innerHTML = `
                         <div class="no-data">
                             <div class="no-data-icon">⚠️</div>
@@ -696,6 +703,12 @@
                             <div class="no-data-text">
                                 Nenhum dado foi encontrado no navegador.<br>
                                 Faça login no Dashboard principal para carregar suas ligas.
+                            </div>
+                            <div style="background:var(--bg-card);padding:15px;border-radius:8px;margin:20px 0;text-align:left;font-size:0.85rem;">
+                                <strong>🔍 DEBUG INFO:</strong><br>
+                                Procurando chave: <code style="color:var(--accent)">${CONFIG.CACHE_KEY}</code><br>
+                                Chaves disponíveis: <code style="color:var(--warning)">${allKeys.join(', ') || 'nenhuma'}</code><br><br>
+                                <em>Abra o Console (F12) para mais detalhes</em>
                             </div>
                             <a href="index.html" class="btn-primary">🏈 Ir para o Dashboard</a>
                         </div>
