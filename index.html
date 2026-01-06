@@ -461,6 +461,8 @@
     </div>
     <div class="toast" id="toast">Copiado!</div>
     <script>
+        const db = new Dexie('FantasyAuditorDB');
+db.version(1).stores({ stats: 'id' });
 const API='https://api.sleeper.app/v1';
 const CONFIG = {
     CACHE_KEY: 'dynasty_cache',
@@ -908,7 +910,22 @@ function getCache(){
         return null;
     }
 }
-function setCache(data){try{localStorage.setItem(CONFIG.CACHE_KEY,JSON.stringify({...data,timestamp:Date.now()}))}catch(e){}}
+function setCache(data) {
+    try {
+        // Mantém o cache original do seu dashboard
+        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({...data, timestamp: Date.now()}));
+
+        // ENVIA PARA A VITRINE (pro.html)
+        db.stats.put({ 
+            id: 'current_leagues', 
+            payload: data.leagues, 
+            user: user.display_name,
+            timestamp: Date.now() 
+        }).then(() => {
+            console.log("Dados sincronizados com o Banco de Dados Pro.");
+        });
+    } catch(e) { console.error("Erro no Sync:", e); }
+}
 function clearCache(){localStorage.removeItem(CONFIG.CACHE_KEY)}
 
 function initTheme(){const s=localStorage.getItem(CONFIG.THEME_KEY);if(s)theme=s;else if(window.matchMedia?.('(prefers-color-scheme:light)').matches)theme='light';document.documentElement.setAttribute('data-theme',theme)}
