@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>Dynasty Dashboard - Sleeper Pro</title>
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--bg-primary:#1a1d21;--bg-secondary:#23272e;--bg-card:#2a2f38;--bg-hover:#343a45;--text-primary:#e8eaed;--text-secondary:#9aa0a6;--accent:#5c9eff;--accent-hover:#4a8af0;--accent-muted:rgba(92,158,255,0.15);--success:#34a853;--success-muted:rgba(52,168,83,0.15);--warning:#f9ab00;--warning-muted:rgba(249,171,0,0.15);--error:#ea4335;--error-muted:rgba(234,67,53,0.15);--dynasty:#a185f7;--dynasty-muted:rgba(161,133,247,0.15);--redraft:#4ade80;--redraft-muted:rgba(74,222,128,0.15);--keeper:#fbbf24;--keeper-muted:rgba(251,191,36,0.15);--border:#3c4149;--shadow:0 2px 8px rgba(0,0,0,0.3);--trending:#ff6b6b;--trending-muted:rgba(255,107,107,0.15);
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        [data-theme="light"]{--bg-primary:#f8f9fa;--bg-secondary:#ffffff;--bg-card:#f1f3f4;--text-primary:#202124;--accent:#1a73e8;--border:#dadce0;}
+        
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;line-height:1.5;}
+        .container{max-width:1800px;margin:0 auto;padding: max(1.5rem, var(--safe-top) + 1rem) 1rem;}
+        
+        /* ESTILO DO OTIMIZADOR PREMIUM */
+        .premium-optimizer {
+            background: rgba(161, 133, 247, 0.15);
+            border: 1px dashed var(--dynasty);
+            padding: 12px;
+            margin: 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .opt-header { color: var(--dynasty); font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+        .opt-gem { display: flex; justify-content: space-between; padding: 4px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+
+        /* HEADER & UTILS */
+        header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+        .icon-btn{background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);padding:.5rem;border-radius:8px;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+        .search-section{background:var(--bg-secondary);border-radius:12px;padding:3rem 2rem;margin-bottom:1.5rem;text-align:center;border:1px solid var(--border)}
+        .search-form{display:flex;gap:.5rem;max-width:400px;margin:0 auto}
+        .search-input{flex:1;padding:.75rem 1rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary)}
+        .search-btn{padding:.75rem 1.5rem;background:var(--accent);color:white;border:none;border-radius:8px;font-weight:500;cursor:pointer}
+        
+        /* GRID DE LIGAS */
+        .leagues-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:.75rem}
+        .league-card{background:var(--bg-secondary);border-radius:10px;overflow:hidden;border:1px solid var(--border);transition:all .2s;position:relative}
+        .league-header{padding:.75rem;display:flex;justify-content:space-between;background:var(--bg-secondary);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
+        .league-avatar{width:40px;height:40px;border-radius:8px;background:var(--bg-card);overflow:hidden;display:flex;align-items:center;justify-content:center}
+        .league-avatar img{width:100%;height:100%;object-fit:cover}
+        .roster-section{padding:.6rem;max-height:350px;overflow-y:auto}
+        .player-row{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;background:var(--bg-card);border-radius:5px;font-size:.8rem;margin-bottom:2px}
+        .pos-qb{background:var(--error-muted);color:var(--error)}
+        .pos-rb{background:var(--success-muted);color:var(--success)}
+        .pos-wr{background:var(--accent-muted);color:var(--accent)}
+        .pos-te{background:var(--warning-muted);color:var(--warning)}
+
+        /* LOADING */
+        .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;color:var(--text-secondary)}
+        .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:.75rem}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        
+        /* REPETIR ESTILOS ADICIONAIS CONFORME NECESSÁRIO DO ORIGINAL */
+    </style>
+</head>
+<body>
+    <div class="container"><div id="app"></div></div>
+    
+    <script>
+// --- CONFIGURAÇÃO E BANCO DE DADOS ---
+const API = 'https://api.sleeper.app/v1';
+const db = new Dexie('FantasyAuditorDB');
+db.version(1).stores({ 
+    players: 'player_id, position', 
+    stats: '++id, [player_id+season]' 
+});
+
+const worker = new Worker('./worker.js');
+let globalPlayers = {};
+let players={},user=null,leagues=[],matchups={},transactions={},seasonHistory={};
+let filter='all',view='cards',year='2025',theme='dark',sortBy='name',playerSearch='',positionFilter='all';
+let nflState = null;
+
+// --- FUNÇÕES DO OTIMIZADOR ---
+function getSmartOptimizer(l) {
+    const roster = l.myRoster;
+    const settings = l.scoring_settings;
+    if (!roster || !settings) return '';
+
+    const starters = roster.starters || [];
+    const bench = (roster.players || []).filter(id => !starters.includes(id));
+    let gems = [];
+
+    bench.forEach(id => {
+        const p = globalPlayers[id];
+        if (!p) return;
+        // Exemplo de lógica: TE em liga TE Premium
+        if (p.position === 'TE' && settings.bonus_rec_te > 0) {
+            gems.push({ name: p.name || p.full_name, advantage: settings.bonus_rec_te * 5 });
+        }
+    });
+
+    if (gems.length === 0) return '';
+
+    return `
+        <div class="premium-optimizer">
+            <div class="opt-header">🚀 LINEUP OPTIMIZER</div>
+            ${gems.map(g => `<div class="opt-gem"><span>${g.name}</span><span style="color:var(--success)">+${g.advantage.toFixed(1)} pts</span></div>`).join('')}
+        </div>`;
+}
+
+// --- CONTROLE DE BUSCA COM WORKER ---
+async function handleSearch() {
+    const u = document.getElementById('usernameInput').value.trim();
+    if(!u) return;
+    showLoad("Sincronizando Banco de Dados Local..."); 
+    worker.postMessage({ type: 'SYNC_PLAYERS' });
+}
+
+worker.onmessage = async (e) => {
+    if (e.data.type === 'SYNC_COMPLETE') {
+        const all = await db.players.toArray();
+        all.forEach(p => globalPlayers[p.player_id] = p);
+        players = globalPlayers; // Sincroniza com a variável do dashboard antigo
+        
+        // Agora busca o usuário e carrega as ligas
+        const u = document.getElementById('usernameInput').value.trim();
+        const r = await fetch(`${API}/user/${u}`);
+        if(!r.ok) { renderSearch(); return; }
+        user = await r.json();
+        localStorage.setItem('dynasty_user', JSON.stringify(user));
+        await loadLeagues(); 
+    }
+};
+
+// --- RESTANTE DAS FUNÇÕES ORIGINAIS (Simplificadas para o exemplo) ---
+// [Aqui você deve manter todas as funções i18n, loadLeagues, etc do seu arquivo de 1600 linhas]
+// Vou incluir as essenciais para o funcionamento básico:
+
+const i18n = { 'pt-BR': { title: 'Dynasty Dashboard', username: 'Username Sleeper', enter: 'Entrar' } };
+const lang = 'pt-BR';
+function t(key) { return i18n[lang][key] || key; }
+
+function renderSearch() {
+    document.getElementById('app').innerHTML = `
+        <div class="search-section">
+            <h1>${t('title')}</h1>
+            <div class="search-form">
+                <input type="text" class="search-input" id="usernameInput" placeholder="${t('username')}">
+                <button class="search-btn" onclick="handleSearch()">${t('enter')}</button>
+            </div>
+        </div>`;
+}
+
+async function loadLeagues() {
+    const r = await fetch(`${API}/user/${user.user_id}/leagues/nfl/2025`);
+    leagues = await r.json();
+    for(let l of leagues) {
+        const ros = await fetch(`${API}/league/${l.league_id}/rosters`);
+        l.rosters = await ros.json();
+        l.myRoster = l.rosters.find(ros => ros.owner_id === user.user_id);
+    }
+    renderDash();
+}
+
+function renderDash() {
+    document.getElementById('app').innerHTML = `
+        <header><h1>${user.display_name}</h1></header>
+        <div class="leagues-grid">${leagues.map(l => renderCard(l)).join('')}</div>`;
+}
+
+function renderCard(l) {
+    const optimizationHtml = getSmartOptimizer(l);
+    const ty = l.settings?.type === 2 ? 'dynasty' : 'redraft';
+    
+    return `
+        <div class="league-card">
+            ${optimizationHtml}
+            <div class="league-header">
+                <div class="league-avatar">${l.avatar ? `<img src="https://sleepercdn.com/avatars/thumbs/${l.avatar}">` : '🏈'}</div>
+                <div class="league-info">
+                    <div class="league-name">${l.name}</div>
+                    <div class="league-badge">${ty}</div>
+                </div>
+            </div>
+            <div class="roster-section">
+                ${(l.myRoster?.players || []).slice(0,5).map(id => {
+                    const p = globalPlayers[id] || {full_name: 'Player', position: '?'};
+                    return `<div class="player-row"><span class="pos-badge pos-${p.position.toLowerCase()}">${p.position}</span>${p.full_name}</div>`;
+                }).join('')}
+            </div>
+        </div>`;
+}
+
+function showLoad(m){ document.getElementById('app').innerHTML=`<div class="loading"><div class="spinner"></div><div>${m}</div></div>`; }
+
+// Iniciar
+if(localStorage.getItem('dynasty_user')) {
+    user = JSON.parse(localStorage.getItem('dynasty_user'));
+    handleSearch(); // Carrega com worker mesmo se já logado
+} else {
+    renderSearch();
+}
+    </script>
+</body>
+</html>
