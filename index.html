@@ -2,155 +2,114 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title>Dynasty Dashboard - Sleeper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dynasty Dashboard - Teste Real</title>
     <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta name="description" content="Visualize todas suas ligas Sleeper de Fantasy Football">
-    <meta name="theme-color" content="#1a1d21">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        :root{--bg-primary:#1a1d21;--bg-secondary:#23272e;--bg-card:#2a2f38;--bg-hover:#343a45;--text-primary:#e8eaed;--text-secondary:#9aa0a6;--accent:#5c9eff;--accent-hover:#4a8af0;--accent-muted:rgba(92,158,255,0.15);--success:#34a853;--success-muted:rgba(52,168,83,0.15);--warning:#f9ab00;--warning-muted:rgba(249,171,0,0.15);--error:#ea4335;--error-muted:rgba(234,67,53,0.15);--dynasty:#a185f7;--dynasty-muted:rgba(161,133,247,0.15);--redraft:#4ade80;--redraft-muted:rgba(74,222,128,0.15);--keeper:#fbbf24;--keeper-muted:rgba(251,191,36,0.15);--border:#3c4149;--shadow:0 2px 8px rgba(0,0,0,0.3);--trending:#ff6b6b;--trending-muted:rgba(255,107,107,0.15);
-        --safe-top: env(safe-area-inset-top, 0px);
-        --safe-bottom: env(safe-area-inset-bottom, 0px);
-        --safe-left: env(safe-area-inset-left, 0px);
-        --safe-right: env(safe-area-inset-right, 0px);
-        }
-        [data-theme="light"]{--bg-primary:#f8f9fa;--bg-secondary:#ffffff;--bg-card:#f1f3f4;--bg-hover:#e8eaed;--text-primary:#202124;--text-secondary:#5f6368;--accent:#1a73e8;--accent-hover:#1557b0;--accent-muted:rgba(26,115,232,0.1);--success:#188038;--success-muted:rgba(24,128,56,0.1);--warning:#e37400;--warning-muted:rgba(227,116,0,0.1);--error:#d93025;--error-muted:rgba(217,48,37,0.1);--dynasty:#7c4dff;--dynasty-muted:rgba(124,77,255,0.1);--redraft:#0d904f;--redraft-muted:rgba(13,144,79,0.1);--keeper:#b45309;--keeper-muted:rgba(180,83,9,0.1);--border:#dadce0;--shadow:0 1px 3px rgba(60,64,67,0.15);--trending:#e53935;--trending-muted:rgba(229,57,53,0.1)}
-        
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;line-height:1.5;transition:background .3s,color .3s;}
-        .container{max-width:1800px;margin:0 auto;padding: max(1.5rem, var(--safe-top) + 1rem) 1rem;}
-        header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
-        .header-right{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-        .icon-btn{background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);padding:.5rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-        .user-info{display:flex;align-items:center;gap:.5rem;background:var(--bg-secondary);padding:.4rem .75rem;border-radius:8px;border:1px solid var(--border);font-size:.85rem}
-        .user-avatar{width:28px;height:28px;border-radius:50%;}
-        .leagues-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:.75rem}
-        .league-card{background:var(--bg-secondary);border-radius:10px;overflow:hidden;border:1px solid var(--border);position: relative;}
-        .league-header{padding:.75rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background: var(--bg-secondary);position:sticky;top:0;z-index:2}
-        .roster-section{padding:.6rem;max-height:350px;overflow-y:auto}
-        .player-row{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;background:var(--bg-card);border-radius:5px;font-size:.8rem;margin-bottom:2px}
-        /* ... Estilos simplificados para o exemplo ... */
+        :root{--bg-primary:#1a1d21;--bg-secondary:#23272e;--bg-card:#2a2f38;--text-primary:#e8eaed;--accent:#5c9eff;--dynasty:#a185f7;--success:#34a853;--border:#3c4149;}
+        body{font-family:sans-serif;background:var(--bg-primary);color:var(--text-primary);margin:0;padding:20px;}
+        header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border)}
+        .leagues-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:15px;margin-top:20px}
+        .league-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:15px}
+        .player-row{font-size:0.8rem;padding:3px;background:var(--bg-card);margin:2px;border-radius:3px;display:flex;justify-content:space-between}
+        .btn-pro{background:linear-gradient(135deg, var(--dynasty), var(--accent));color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:bold;cursor:pointer}
+        .loading{text-align:center;padding:50px}
     </style>
 </head>
 <body>
-    <div class="container"><div id="app"></div></div>
-    
+    <div id="app">
+        <div class="loading">Iniciando Dashboard Real...</div>
+    </div>
+
     <script>
-        // --- DATABASE & CORE ---
+        // 1. INICIALIZAÇÃO DO BANCO DE DADOS (PONTE PARA O PRO.HTML)
         const db = new Dexie('FantasyAuditorDB');
         db.version(1).stores({ stats: 'id' });
 
-        const API='https://api.sleeper.app/v1';
-        const CONFIG = { CACHE_KEY: 'dynasty_cache', USER_KEY: 'dynasty_user', THEME_KEY: 'dynasty_theme', LANG_KEY: 'dynasty_lang', CACHE_HOURS: 4, NFL_WEEKS: 18 };
-        
-        let players={}, user=null, leagues=[], nflState=null;
-        let lang='pt-BR';
+        const API = 'https://api.sleeper.app/v1';
+        let players = {}, user = null, leagues = [];
 
-        // --- MODO PRO ---
         function openProView() { window.open('pro.html', '_blank'); }
 
-        function getSmartOptimizer(l) {
-            const roster = l.myRoster;
-            if (!roster || !players) return '';
-            const settings = l.scoring_settings || {};
-            const starters = roster.starters || [];
-            const bench = (roster.players || []).filter(id => !starters.includes(id));
-            let gems = [];
-            bench.forEach(id => {
-                const p = players[id];
-                if (p && p.position === 'TE' && settings.bonus_rec_te > 0) {
-                    gems.push({ name: p.full_name, advantage: settings.bonus_rec_te * 5 });
-                }
-            });
-            if (gems.length === 0) return '';
-            return `<div style="background:rgba(161,133,247,0.1); border:1px dashed #a185f7; padding:8px; margin:8px; border-radius:6px; font-size:0.75rem;">
-                <div style="color:#a185f7; font-weight:bold; margin-bottom:4px;">🚀 OTIMIZADOR</div>
-                ${gems.map(g => `<div style="display:flex; justify-content:space-between;"><span>${g.name}</span><span style="color:#34a853">+${g.advantage.toFixed(1)} pts</span></div>`).join('')}
-            </div>`;
-        }
-
-        // --- CACHE & SYNC ---
-        function setCache(data) {
-            localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({...data, timestamp: Date.now()}));
-            db.stats.put({ 
+        // 2. SINCRONIZAÇÃO COM O MODO PRO
+        async function syncWithPro(data) {
+            await db.stats.put({ 
                 id: 'current_leagues', 
-                payload: data.leagues, 
+                payload: data, 
                 user: user.display_name,
                 timestamp: Date.now() 
             });
+            console.log("Dados reais sincronizados para o Modo Pro!");
         }
 
-        // --- RENDERING ---
-        function renderDash() {
-            const app = document.getElementById('app');
-            app.innerHTML = `
+        // 3. LÓGICA DE BUSCA REAL (IGUAL AO SEU ORIGINAL)
+        async function loadData() {
+            try {
+                // Busca Usuário (Tenta o salvo ou pede novo)
+                let saved = localStorage.getItem('dynasty_user');
+                if(!saved) {
+                    const username = prompt("Digite seu Username do Sleeper para o teste:");
+                    const userRes = await fetch(`${API}/user/${username}`);
+                    user = await userRes.json();
+                    localStorage.setItem('dynasty_user', JSON.stringify(user));
+                } else { user = JSON.parse(saved); }
+
+                document.getElementById('app').innerHTML = `<div class="loading">Carregando seus jogadores de 2025...</div>`;
+
+                // Busca Jogadores NFL (Carga Pesada)
+                const pRes = await fetch(`${API}/players/nfl`);
+                players = await pRes.json();
+
+                // Busca Ligas do Usuário
+                const lRes = await fetch(`${API}/user/${user.user_id}/leagues/nfl/2025`);
+                leagues = await lRes.json();
+
+                // Busca Detalhes de cada liga (Rosters)
+                for(let l of leagues) {
+                    const rRes = await fetch(`${API}/league/${l.league_id}/rosters`);
+                    const rosters = await rRes.json();
+                    l.myRoster = rosters.find(r => r.owner_id === user.user_id);
+                }
+
+                // ENVIA OS DADOS REAIS PARA O BANCO
+                await syncWithPro(leagues);
+                render();
+
+            } catch (e) {
+                alert("Erro ao carregar dados: " + e.message);
+            }
+        }
+
+        // 4. RENDERIZAÇÃO NA TELA
+        function render() {
+            document.getElementById('app').innerHTML = `
                 <header>
-                    <h1>🏈 Dynasty Dashboard</h1>
-                    <div class="header-right">
-                        <button onclick="openProView()" style="padding:8px 15px; background:linear-gradient(135deg, #a185f7, #5c9eff); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer">✨ MODO PRO</button>
-                        <div class="user-info">${user.display_name}</div>
+                    <div>
+                        <h2>🏈 Dashboard Real: ${user.display_name}</h2>
+                        <small>Dados sincronizados com o Banco de Dados local</small>
                     </div>
+                    <button class="btn-pro" onclick="openProView()">✨ ABRIR MODO PRO</button>
                 </header>
                 <div class="leagues-grid">
-                    ${leagues.map(l => renderCard(l)).join('')}
+                    ${leagues.map(l => `
+                        <div class="league-card">
+                            <h3>${l.name}</h3>
+                            <div style="border-top:1px solid #3c4149; padding-top:10px">
+                                ${l.myRoster ? (l.myRoster.players || []).slice(0,10).map(id => `
+                                    <div class="player-row">
+                                        <span>${players[id]?.full_name || 'Desconhecido'}</span>
+                                        <b style="color:var(--accent)">${players[id]?.position || '?'}</b>
+                                    </div>
+                                `).join('') : 'Roster não encontrado'}
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
             `;
         }
 
-        function renderCard(l) {
-            const optHtml = getSmartOptimizer(l);
-            const ty = l.settings?.type === 2 ? 'dynasty' : 'redraft';
-            
-            return `
-                <div class="league-card">
-                    ${optHtml}
-                    <div class="league-header">
-                        <strong>${l.name}</strong>
-                        <span style="font-size:0.7rem; background:#3c4149; padding:2px 6px; border-radius:4px">${ty}</span>
-                    </div>
-                    <div class="roster-section">
-                        ${(l.myRoster?.players || []).slice(0,10).map(id => {
-                            const p = players[id] || {full_name: 'Unknown'};
-                            return `<div class="player-row"><span>${p.position || ''}</span> ${p.full_name}</div>`;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        // --- INIT ---
-        async function init() {
-            const savedUser = localStorage.getItem(CONFIG.USER_KEY);
-            if(!savedUser) { 
-                // Simulação de login para exemplo ou redirecionar para sua busca
-                const u = prompt("Digite seu username Sleeper:");
-                const r = await fetch(`${API}/user/${u}`);
-                user = await r.json();
-                localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(user));
-            } else {
-                user = JSON.parse(savedUser);
-            }
-
-            // Carregar jogadores (Isso demora, ideal ter cache)
-            const pRes = await fetch(`${API}/players/nfl`);
-            players = await pRes.json();
-
-            // Carregar ligas
-            const lRes = await fetch(`${API}/user/${user.user_id}/leagues/nfl/2025`);
-            leagues = await lRes.json();
-            
-            for(let l of leagues) {
-                const rRes = await fetch(`${API}/league/${l.league_id}/rosters`);
-                const rosters = await rRes.json();
-                l.myRoster = rosters.find(r => r.owner_id === user.user_id);
-            }
-
-            setCache({leagues, userId: user.user_id});
-            renderDash();
-        }
-
-        init();
+        loadData();
     </script>
 </body>
 </html>
